@@ -33,7 +33,7 @@ Developer guide in English: [docs/DEVELOPING.en.md](docs/DEVELOPING.en.md).
 - **鍵盤控制**：Alt+↑ / Alt+↓ 移動，Delete 刪除
 - **安全**：標題等文字使用 textContent
 - **效能**：卡片獨立 contain
-- 約 12 KB 的 JS 和 8 KB 的 CSS 讚讚讚
+- 約 23 KB 的 JS 和 11 KB 的 CSS 讚讚讚
 
 ## 快速開始
 
