@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dusk-cards demo</title>
+  <!-- 先載入 SortableJS，再載入 dusk-cards / load SortableJS first, then dusk-cards -->
+  <link rel="stylesheet" href="../src/dusk-cards.css">
+  <script src="../vendor/Sortable.min.js"></script>
+  <script src="../src/dusk-cards.js"></script>
+  <style>
+    /* 這一段只是 demo 的排版，不是函式庫的一部分 / this block is only the demo layout, not part of the library */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: var(--dc-font); color: var(--dc-ink); line-height: 1.5; }
+    .page { max-width: 1100px; margin: 0 auto; padding: 28px 20px 40px; display: grid; gap: 18px; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+    h1 { margin: 0; font-size: 1.3rem; font-weight: 400; }
+    h1 small { display: block; margin-top: 2px; font-size: .82rem; color: var(--dc-ink-2); }
+    .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .tools button {
+      border: 1px solid var(--dc-panel-line); border-radius: 999px; padding: 7px 15px; cursor: pointer; font: inherit; font-size: .88rem;
+      background: rgba(255, 255, 255, .55); color: var(--dc-ink-2);
+    }
+    .tools button:hover { background: rgba(255, 255, 255, .85); color: var(--dc-ink); }
+    .tools button[aria-pressed="true"], .tools .primary { background: linear-gradient(180deg, var(--dc-accent-light), var(--dc-accent)); color: #fff; border-color: transparent; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 18px; align-items: stretch; }
+    .panel-title { margin: 0 0 12px; font-size: 1rem; font-weight: 400; display: flex; align-items: center; gap: 8px; }
+    .count { font-family: var(--dc-font-num); font-weight: 800; font-size: .78rem; color: var(--dc-accent); background: rgba(84, 115, 159, .12); border-radius: 999px; padding: 1px 9px; }
+    .log { margin: 0; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, .55); font: .78rem/1.6 ui-monospace, Consolas, monospace; color: var(--dc-ink-2); min-height: 5.2em; white-space: pre-wrap; }
+    .hint { font-size: .82rem; color: var(--dc-ink-2); margin: 0; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    /* 換色範例：只要覆蓋 --dc-* 變數就好 / color themes: just override the --dc-* variables */
+    :root[data-theme="mint"] {
+      --dc-lavender: #A9CFC4; --dc-rose: #D6E8C8; --dc-steel: #3F8F7A; --dc-ink: #24443C; --dc-ink-2: #4C6E64; --dc-ink-3: #7E9C93;
+      --dc-accent: #3C8570; --dc-accent-light: #56A38D; --dc-rose-deep: #6FAE8F; --dc-rose-ink: #2F6B55; --dc-card: #F6FCF8;
+      --dc-line: rgba(111, 174, 143, .35); --dc-shadow-rgb: 47, 107, 85;
+      --dc-sky-1: #8FC4B6; --dc-sky-2: #B5DBC8; --dc-sky-3: #DCEBC9; --dc-sky-4: #F4F3D8;
+      --dc-trash-bg: rgba(166, 214, 190, .38); --dc-trash-bg-active: rgba(143, 200, 170, .75); --dc-trash-border: rgba(63, 143, 122, .6);
+    }
+    :root[data-theme="sakura"] {
+      --dc-lavender: #E3B9CB; --dc-rose: #F3D3DC; --dc-steel: #B4577B; --dc-ink: #55283C; --dc-ink-2: #85516A; --dc-ink-3: #AD8497;
+      --dc-accent: #B4577B; --dc-accent-light: #CC759A; --dc-rose-deep: #D98BA9; --dc-rose-ink: #8E3C5D; --dc-card: #FFF8FA;
+      --dc-line: rgba(217, 139, 169, .35); --dc-shadow-rgb: 142, 60, 93;
+      --dc-sky-1: #D9A7C2; --dc-sky-2: #EAC1D1; --dc-sky-3: #F7D9D2; --dc-sky-4: #FFF0E3;
+      --dc-trash-bg: rgba(243, 211, 220, .5); --dc-trash-bg-active: rgba(236, 178, 198, .8); --dc-trash-border: rgba(180, 87, 123, .55);
+    }
+    :root[data-theme="night"] {
+      --dc-lavender: #5A5F86; --dc-rose: #6A5470; --dc-steel: #8FA6D8; --dc-ink: #E8EAF6; --dc-ink-2: #B7BCD8; --dc-ink-3: #8C92B3;
+      --dc-accent: #6E8CCB; --dc-accent-light: #86A2DC; --dc-rose-deep: #C98C99; --dc-rose-ink: #F0C6D0; --dc-card: #2B2F4A;
+      --dc-line: rgba(160, 170, 220, .22); --dc-shadow-rgb: 0, 0, 0;
+      --dc-sky-1: #1B1D33; --dc-sky-2: #272B4A; --dc-sky-3: #3A3358; --dc-sky-4: #5A4466; --dc-glow: 140, 130, 200;
+      --dc-panel-top: rgba(44, 48, 78, .72); --dc-panel-bottom: rgba(34, 38, 66, .62); --dc-panel-line: rgba(160, 170, 220, .25);
+      --dc-trash-bg: rgba(106, 84, 112, .35); --dc-trash-bg-active: rgba(130, 90, 120, .7); --dc-trash-border: rgba(201, 140, 153, .6);
+    }
+  </style>
+</head>
+<body class="dc-sky">
+  <div class="page">
+    <header>
+      <h1>dusk-cards<small>拖曳排序 · 拖到右邊垃圾桶撕裂消失 · 換色只要改變數 / drag to reorder · drag to the trash to tear away · recolor with variables</small></h1>
+      <div class="tools">
+        <button type="button" class="primary" id="btnAdd">＋ 新增卡片 / Add card</button>
+        <button type="button" id="btnShuffle">隨機排序 / Shuffle</button>
+        <span aria-hidden="true" style="opacity:.5">|</span>
+        <span id="themes" role="group" aria-label="theme"></span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="dc-panel">
+        <h2 class="panel-title">待播清單 / Queue <span class="count" id="count">0</span></h2>
+        <div id="board"></div>
+      </section>
+      <section class="dc-panel" style="display:grid">
+        <div id="trash"></div>
+      </section>
+    </div>
+
+    <p class="hint">鍵盤：點卡片後 Alt+↑ / Alt+↓ 移動，Delete 刪除 · Keyboard: focus a card, then Alt+Up / Alt+Down to move, Delete to remove</p>
+    <pre class="log" id="log">(事件會顯示在這裡 / events show up here)</pre>
+  </div>
+
+  <script>
+    /* 範例資料：縮圖用程式即時畫的 SVG，沒有外部圖片 / sample data: thumbnails are SVG drawn on the fly, no external images */
+    function art(a, b, shape) {
+      const shapes = {
+        sun: '<circle cx="80" cy="50" r="22" fill="rgba(255,255,255,.75)"/>',
+        wave: '<path d="M0 62 Q20 44 40 62 T80 62 T120 62 T160 62 V90 H0Z" fill="rgba(255,255,255,.6)"/>',
+        hills: '<path d="M0 90 L40 48 L80 76 L120 38 L160 90Z" fill="rgba(255,255,255,.55)"/>',
+        moon: '<circle cx="96" cy="42" r="20" fill="rgba(255,255,255,.8)"/><circle cx="106" cy="36" r="18" fill="' + b + '"/>',
+        drops: '<g fill="rgba(255,255,255,.7)"><circle cx="46" cy="34" r="6"/><circle cx="84" cy="56" r="8"/><circle cx="116" cy="30" r="5"/><circle cx="124" cy="64" r="6"/></g>',
+      };
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="160" height="90" fill="url(#g)"/>${shapes[shape]}</svg>`;
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+    const SAMPLES = [
+      { title: "Morning Mist 晨霧", thumbnail: art("#AFAFC8", "#E3C2C6", "sun"), duration: 217, tags: [{ text: "Demo", tone: "rose" }], meta: ["Dusk Studio"] },
+      { title: "Paper Boats 紙船", thumbnail: art("#5F7EAE", "#AFAFC8", "wave"), duration: 184, tags: [{ text: "Lo-fi", tone: "steel" }], meta: ["Dusk Studio"] },
+      { title: "Lantern Street 燈籠街", thumbnail: art("#C98C99", "#F7E0D3", "hills"), duration: 256, tags: [{ text: "Demo", tone: "rose" }], meta: ["Night Market"] },
+      { title: "Quiet Rain 靜靜的雨", thumbnail: art("#54739F", "#8FA6D8", "drops"), duration: 203, tags: [{ text: "Ambient", tone: "steel" }], meta: ["Rainy Days"] },
+      { title: "Coastline at Dusk 黃昏海岸", thumbnail: art("#E3A5B1", "#AFAFC8", "moon"), duration: 241, tags: [{ text: "Demo", tone: "rose" }], meta: ["Dusk Studio"] },
+    ];
+    let seq = 0;
+    const fresh = (i) => Object.assign({ id: ++seq }, SAMPLES[i % SAMPLES.length]);
+
+    const logEl = document.getElementById("log"), countEl = document.getElementById("count");
+    const lines = [];
+    const log = (text) => { lines.unshift(text); lines.length = Math.min(lines.length, 4); logEl.textContent = lines.join("\n"); };
+    const updateCount = (items) => { countEl.textContent = String(items.length); };
+
+    const board = DuskCards.createBoard("#board", {
+      items: SAMPLES.map((_, i) => fresh(i)),
+      trash: "#trash",
+      labels: { empty: "空的，按上面的新增 / empty, press Add above", trash: "拖到這裡放開\n即可刪除 / drop here to delete" },
+      onReorder: (e) => { log(`onReorder  #${e.id}  ${e.from + 1} → ${e.to + 1}`); updateCount(e.items); },
+      onRemove: (e) => { log(`onRemove   "${e.item.title}"  (${e.reason})`); updateCount(e.items); },
+      onAction: (e) => log(`onAction   ${e.name}  "${e.item.title}"`),
+    });
+    updateCount(board.getItems());
+
+    document.getElementById("btnAdd").addEventListener("click", () => {
+      board.add(fresh(Math.floor(Math.random() * SAMPLES.length)));
+      updateCount(board.getItems());
+      log("add()");
+    });
+    document.getElementById("btnShuffle").addEventListener("click", () => {
+      const items = board.getItems();
+      for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
+      board.setItems(items);
+      log("setItems()  shuffled");
+    });
+
+    /* 換色：只是改 <html data-theme="..."> / theming: just change <html data-theme="..."> */
+    const themes = [["dusk", "黃昏 Dusk"], ["mint", "薄荷 Mint"], ["sakura", "櫻花 Sakura"], ["night", "夜晚 Night"]];
+    const holder = document.getElementById("themes");
+    holder.style.display = "inline-flex"; holder.style.gap = "6px";
+    for (const [name, label] of themes) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = label; b.setAttribute("aria-pressed", name === "dusk");
+      b.addEventListener("click", () => {
+        if (name === "dusk") document.documentElement.removeAttribute("data-theme"); else document.documentElement.dataset.theme = name;
+        holder.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+      });
+      holder.appendChild(b);
+    }
+    const urlTheme = new URLSearchParams(location.search).get("theme");
+    if (urlTheme) [...holder.children].find((b) => b.textContent.toLowerCase().includes(urlTheme))?.click();
+  </script>
+</body>
+</html>

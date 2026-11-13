@@ -1,0 +1,10 @@
+# 編輯器／系統 / editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 暫存 / temporary
+node_modules/
+__pycache__/
+*.log

@@ -1,0 +1,20 @@
+{
+  "name": "dusk-cards",
+  "version": "1.0.0",
+  "description": "Card-style UI kit: drag to reorder, drag to the trash to tear a card away, recolor with CSS variables. Plain JavaScript + CSS.",
+  "main": "src/dusk-cards.js",
+  "style": "src/dusk-cards.css",
+  "files": ["src", "vendor", "README.md", "LICENSE", "THIRD_PARTY.md"],
+  "scripts": {
+    "test": "python test/run.py"
+  },
+  "peerDependencies": {
+    "sortablejs": "^1.15.0"
+  },
+  "keywords": ["cards", "ui", "drag-and-drop", "sortable", "dashboard", "css-variables", "vanilla-js"],
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZmeyEE/dusk-cards.git"
+  }
+}

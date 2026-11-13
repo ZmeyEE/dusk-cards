@@ -1,0 +1,21 @@
+# 每次 push / PR 用無頭 Chrome 跑 test/index.html
+# On every push / PR, run test/index.html in headless Chrome
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run the browser tests
+        run: python test/run.py

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>dusk-cards tests</title>
+  <link rel="stylesheet" href="../src/dusk-cards.css">
+  <script src="../vendor/Sortable.min.js"></script>
+  <script src="../src/dusk-cards.js"></script>
+</head>
+<body>
+  <!--
+    瀏覽器內的測試：不需要任何套件，直接用瀏覽器開，或用無頭 Chrome 跑（見 test/run.py）
+    Tests that run in the browser: no packages needed, open it in a browser or run it with headless Chrome (see test/run.py)
+    結果會寫進下面那個 result 區塊，最後一行是 ALL PASS 或 SOME FAILED
+    The result is written into the result block below; the last line is ALL PASS or SOME FAILED
+  -->
+  <pre id="result">running...</pre>
+  <script>
+    const lines = [];
+    let failed = 0;
+    function check(name, ok, detail) {
+      if (!ok) failed++;
+      lines.push((ok ? "PASS " : "FAIL ") + name + (ok ? "" : "  -> " + detail));
+    }
+    const mount = (items, opts) => {
+      const host = document.createElement("div");
+      document.body.appendChild(host);
+      const board = DuskCards.createBoard(host, Object.assign({ items }, opts));
+      return { host, board };
+    };
+    const titles = (host) => [...host.children].map((n) => n.querySelector(".dc-title").textContent);
+    const badges = (host) => [...host.children].map((n) => n.querySelector(".dc-idx").textContent);
+
+    try {
+      // 1. 基本建立 / basic creation
+      let { host, board } = mount([{ id: "a", title: "A", duration: 65 }, { id: "b", title: "B", duration: "live" }, { id: 3, title: "C" }]);
+      check("creates one card per item", host.children.length === 3, host.children.length);
+      check("cards are numbered 1..n", badges(host).join() === "1,2,3", badges(host));
+      check("duration: seconds -> m:ss, text kept", [...host.querySelectorAll(".dc-pill")].map((n) => n.textContent).join() === "1:05,live");
+      check("version is exposed", /^\d+\.\d+\.\d+$/.test(DuskCards.version), DuskCards.version);
+      check("formatDuration handles hours", DuskCards.formatDuration(3725) === "1:02:05", DuskCards.formatDuration(3725));
+
+      // 2. add / move / remove / setItems
+      board.add({ id: "d", title: "D" }, 1);
+      check("add(item, index) inserts at the index", titles(host).join() === "A,D,B,C", titles(host));
+      check("badges are renumbered after add", badges(host).join() === "1,2,3,4", badges(host));
+      board.move("d", 3);
+      check("move(id, to) reorders", titles(host).join() === "A,B,C,D", titles(host));
+      check("getItems() follows the new order", board.getItems().map((i) => i.id).join() === "a,b,3,d", board.getItems().map((i) => i.id));
+      let reordered = null;
+      const second = mount([{ id: 1, title: "one" }, { id: 2, title: "two" }], { onReorder: (e) => { reordered = e; } });
+      second.board.move(1, 1);
+      check("onReorder fires with from / to / items", reordered && reordered.from === 0 && reordered.to === 1 && reordered.items.length === 2, JSON.stringify(reordered));
+      board.setItems([{ id: "d", title: "D" }, { id: 3, title: "C changed" }, { id: "z", title: "Z" }]);
+      check("setItems adds, removes, updates and orders", titles(host).join() === "D,C changed,Z", titles(host));
+      let dup = "";
+      try { board.add({ id: "z", title: "dup" }); } catch (e) { dup = e.message; }
+      check("duplicate id is rejected", /duplicate id/.test(dup), dup);
+      let removedEvent = null;
+      const third = mount([{ id: 1, title: "x" }], { onRemove: (e) => { removedEvent = e; } });
+      third.board.remove(1);
+      check("remove(id) removes the card and fires onRemove (reason api)", third.host.children.length === 0 && removedEvent && removedEvent.reason === "api", JSON.stringify(removedEvent));
+      check("an empty board shows its hint via data-empty", third.host.dataset.empty.length > 0 && third.host.children.length === 0);
+
+      // 3. 按鈕與鍵盤 / buttons and keyboard
+      let action = null;
+      const fourth = mount([{ id: 1, title: "p" }, { id: 2, title: "q" }], { onAction: (e) => { action = e; } });
+      fourth.host.querySelector('.dc-card .dc-actions button[data-name="play"]').click();
+      check("action button fires onAction", action && action.name === "play" && action.item.id === 1, JSON.stringify(action));
+      const card = fourth.host.children[0];
+      card.focus();
+      card.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", altKey: true, bubbles: true }));
+      check("Alt+ArrowDown moves the focused card", titles(fourth.host).join() === "q,p", titles(fourth.host));
+      card.dispatchEvent(new KeyboardEvent("keydown", { key: "Delete", bubbles: true }));
+      check("Delete removes the focused card", fourth.host.children.length === 1 && fourth.board.getItems().length === 1);
+
+      // 4. 安全：標題只當文字 / safety: titles are text only
+      const fifth = mount([{ id: 1, title: "<img src=x onerror=alert(1)>" }]);
+      check("titles are inserted as text, never as HTML", fifth.host.querySelectorAll("img").length === 0 && fifth.host.querySelector(".dc-title").textContent.startsWith("<img"));
+
+      // 5. 垃圾桶區 / trash zone
+      const trash = document.createElement("div");
+      document.body.appendChild(trash);
+      const sixth = mount([{ id: 1, title: "t" }], { trash });
+      check("trash zone is prepared (class, icon, drop overlay)", trash.classList.contains("dc-trash") && trash.querySelector("svg") && trash.querySelector(".dc-trash-drop"));
+
+      // 6. destroy
+      board.destroy();
+      check("destroy() empties the container", host.children.length === 0 && !host.classList.contains("dc-board"));
+      sixth.board.destroy();
+      check("destroy() removes the drop overlay", !trash.querySelector(".dc-trash-drop"));
+
+      // 7. 缺少 SortableJS 時要有清楚的錯誤 / a clear error when SortableJS is missing
+      const saved = window.Sortable;
+      window.Sortable = undefined;
+      let msg = "";
+      try { DuskCards.createBoard(document.createElement("div")); } catch (e) { msg = e.message; }
+      window.Sortable = saved;
+      check("missing SortableJS gives a helpful error", /SortableJS is not loaded/.test(msg), msg);
+    } catch (e) {
+      failed++;
+      lines.push("FAIL unexpected error  -> " + (e && e.stack || e));
+    }
+    lines.push(failed ? "SOME FAILED (" + failed + ")" : "ALL PASS");
+    document.getElementById("result").textContent = lines.join("\n");
+  </script>
+</body>
+</html>
