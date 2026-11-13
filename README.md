@@ -2,8 +2,8 @@
 
 ## 卡片式 UI 庫：拖曳排序、拖到垃圾桶撕裂消失、換色只要改變數
 
-原生 JavaScript + CSS，沒有框架，不用建置，只靠 [SortableJS](https://github.com/SortableJS/Sortable) 處理拖曳
-從 [discord-music-bot](https://github.com/ZmeyEE/discord-music-bot) 的網頁看板抽出來的，因為真的很好看，所以獨立成一個庫
+原生 JavaScript + CSS， [SortableJS](https://github.com/SortableJS/Sortable) 處理拖曳
+從 [discord-music-bot](https://github.com/ZmeyEE/discord-music-bot) 的網頁看板抽出來的，因為真的很好看，所以獨立成一個庫 O_O 嘿嘿
 
 ![dusk-cards demo](docs/images/theme-dusk.png)
 
@@ -16,7 +16,7 @@
   <tr><td align="center">薄荷 Mint</td><td align="center">櫻花 Sakura</td><td align="center">夜晚 Night</td></tr>
 </table>
 
-試玩：用瀏覽器直接開 `demo/index.html`（不用伺服器，也不用連網）
+試玩：用瀏覽器開 `demo/index.html`
 
 ## English summary
 
@@ -27,13 +27,13 @@ Developer guide in English: [docs/DEVELOPING.en.md](docs/DEVELOPING.en.md).
 
 ## 特色
 
-- **拖曳排序**：卡片可以上下拖，序號徽章自動重排
-- **撕裂刪除**：拖進垃圾桶，卡片在放手的地方被撕成兩半飄走（只動 transform 和 opacity，很順）
-- **換色只要改變數**：全部顏色都是 `--dc-*` 變數，附 4 組範例（黃昏、薄荷、櫻花、夜晚）
-- **鍵盤也能用**：Alt+↑ / Alt+↓ 移動，Delete 刪除，每個按鈕都有 aria-label
-- **安全**：標題等文字一律用 textContent，不會被塞進 HTML
-- **效能**：不用 backdrop-filter，每張卡片獨立 contain，拖曳中不播陰影過渡
-- 約 12 KB 的 JS 和 8 KB 的 CSS（未壓縮）
+- **拖曳排序**：卡片可以上下拖，序號自動重排
+- **撕裂刪除**：拖垃圾桶，卡片在放開滑鼠時會撕成兩半飄走（更改 transform and opacity）
+- **改變數換色**：全部顏色都是 `--dc-*` ，附 4 組範例（黃昏、薄荷、櫻花、夜晚）
+- **鍵盤控制**：Alt+↑ / Alt+↓ 移動，Delete 刪除
+- **安全**：標題等文字使用 textContent
+- **效能**：卡片獨立 contain
+- 約 12 KB 的 JS 和 8 KB 的 CSS 讚讚讚
 
 ## 快速開始
 
@@ -73,7 +73,7 @@ Developer guide in English: [docs/DEVELOPING.en.md](docs/DEVELOPING.en.md).
 | 選項 / Option | 說明 / Description |
 | --- | --- |
 | `items` | 初始卡片陣列，格式見下 / initial cards, format below |
-| `trash` | 刪除區（元素或選擇器），拖進去就刪除並撕裂 / trash zone (element or selector), drop a card there to delete and tear it |
+| `trash` | 刪除區（元素或選擇器），拖進去就刪除、撕裂 / trash zone (element or selector), drop a card there to delete and tear it |
 | `numbered` | 顯示序號徽章，預設 `true` / show the number badge, default `true` |
 | `actions` | 懸停按鈕，預設 `[play, remove]`，格式 `{ name, label, icon }`，名稱 `remove` 內建會撕裂並移除 / hover buttons, `remove` is built in |
 | `labels` | 文字：`{ empty, trash, play, remove }`，要翻譯就改這裡 / texts, translate here |
@@ -154,5 +154,5 @@ python test/run.py
 
 ## 授權
 
-[Unlicense](LICENSE)（公有領域），想怎麼用、怎麼改、商用都可以，不用署名
+[Unlicense](LICENSE)（公有領域），想怎麼用、怎麼改、商用都可以，不用署名，畢竟 AI 協作署名啥地就算了 o_o
 第三方元件見 [THIRD_PARTY.md](THIRD_PARTY.md)
