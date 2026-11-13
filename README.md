@@ -154,5 +154,5 @@ python test/run.py
 
 ## 授權
 
-[Unlicense](LICENSE)（公有領域），想怎麼用、怎麼改、商用都可以，不用署名，畢竟 AI 協作署名啥地就算了 o_o
+[Unlicense](LICENSE)（公有領域），想怎麼用、怎麼改、商用都可以，不用署名，畢竟 AI 協作署名啥地就算了 o_o <br>
 第三方元件見 [THIRD_PARTY.md](THIRD_PARTY.md)
